@@ -5,6 +5,7 @@ douglas@crockford.com
 
 2020-11-06
 
+
 ## Status
 | branch | [master](https://github.com/jslint-org/jslint/tree/master) | [beta](https://github.com/jslint-org/jslint/tree/beta) | [alpha](https://github.com/jslint-org/jslint/tree/alpha)|
 |--:|:--:|:--:|:--:|
