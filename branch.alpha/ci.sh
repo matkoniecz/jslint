@@ -218,15 +218,8 @@ shGithubCi() {(set -e
     shJslintCli .
     # create coverage-report
     shRunWithCoverage shJslintCli jslint.js
-    # screenshot coverage-report
-    shBrowserScreenshot .build/coverage/jslint.js.html
     # screenshot live-web-demo
     shBrowserScreenshot https://jslint.com/index.html
-    if [ -f .build/screenshot.browser.%2Findex.html.png ]
-    then
-        mv .build/screenshot.browser.%2Findex.html.png \
-            .build/screenshot.browser.%2Fjslint.com%2Findex.html.png
-    fi
 )}
 
 shGithubArtifactUpload() {(set -e
@@ -634,7 +627,7 @@ shReadmeLinkValidate() {(set -e
         ), "").replace((
             /\/branch\.\w+?\//g
         ), "/branch.alpha/").replace((
-            /jslint-org\/jslint/g
+            /\bjslint-org\/jslint\b/g
         ), process.env.GITHUB_REPOSITORY);
         // ignore private-link
         if (
