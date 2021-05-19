@@ -633,7 +633,9 @@ shReadmeLinkValidate() {(set -e
             /[\u0022\u0027]/g
         ), "").replace((
             /\/branch\.\w+?\//g
-        ), "/branch.alpha/");
+        ), "/branch.alpha/").replace((
+            /jslint-org\/jslint/g
+        ), process.env.GITHUB_REPOSITORY);
         // ignore private-link
         if (
             process.env.npm_package_private &&
