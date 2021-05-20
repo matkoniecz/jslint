@@ -41,7 +41,9 @@ if (!globalThis.debugInline) {
     if (String(file + "/").indexOf(process.cwd() + "/") === 0) {
         file = file.replace(process.cwd(), "");
     }
-    file = ".build/screenshot.browser." + encodeURIComponent(file);
+    file = ".build/screenshot.browser." + encodeURIComponent(file).replace((
+        /%/g
+    ), "_").toLowerCase();
     process.on("exit", function (exitCode) {
         if (typeof exitCode === "object" && exitCode) {
             console.error(exitCode);
@@ -67,7 +69,7 @@ if (!globalThis.debugInline) {
             "--incognito",
             "--timeout=30000",
             "--user-data-dir=/dev/null",
-            "--window-size=800x600",
+            "--window-size=" + (process.argv[2] || "800x600"),
             (
                 extname === ".html"
                 ? "--dump-dom"
@@ -112,7 +114,158 @@ if (!globalThis.debugInline) {
         );
     });
 }());
-' "$1" # '
+' "$@" # '
+)}
+
+shCiArtifactUpload() {(set -e
+# this function will upload build-artifacts to branch-gh-pages
+    node -e '
+process.exit(
+    `${process.version.split(".")[0]}.${process.arch}.${process.platform}` !==
+    process.env.CI_NODE_VERSION_ARCH_PLATFORM
+);
+' || return 0
+    local BRANCH
+    # init $BRANCH
+    BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+    # init .git/config
+    git config --local user.email "github-actions@users.noreply.github.com"
+    git config --local user.name "github-actions"
+    # add dir .build
+    git add -f .build/
+    git commit -am "add dir .build"
+    # checkout branch-gh-pages
+    git checkout -b gh-pages
+    git fetch origin gh-pages
+    git reset --hard origin/gh-pages
+    # update dir branch.$BRANCH
+    rm -rf "branch.$BRANCH"
+    mkdir "branch.$BRANCH"
+    (set -e
+        cd "branch.$BRANCH"
+        git init -b branch1
+        git pull --depth=1 .. "$BRANCH"
+        rm -rf .git
+        git add -f .
+    )
+    # update root-dir with branch-master
+    if [ "$BRANCH" = master ]
+    then
+        git checkout master .
+    fi
+    git status
+    git commit -am "update dir branch.$BRANCH" || true
+    # if branch-gh-pages has more than 100 commits,
+    # then backup and squash commits
+    if [ "$(git rev-list --count gh-pages)" -gt 100 ]
+    then
+        # backup
+        shGitCmdWithGithubToken push origin -f gh-pages:gh-pages.backup
+        # squash commits
+        git checkout --orphan squash1
+        git commit --quiet -am squash || true
+        # reset branch-gh-pages to squashed-commit
+        git push . -f squash1:gh-pages
+        git checkout gh-pages
+        # force-push squashed-commit
+        shGitCmdWithGithubToken push origin -f gh-pages
+    fi
+    # list files
+    shGitLsTree
+    # push branch-gh-pages
+    shGitCmdWithGithubToken push origin gh-pages
+    # validate http-links
+    (set -e
+        cd "branch.$BRANCH"
+        sleep 15
+        shDirLinkValidate
+    )
+)}
+
+shCiBase() {(set -e
+# this function will run github-ci
+    # jslint all files
+    shJslintCli .
+    # create coverage-report
+    shRunWithCoverage shJslintCli jslint.js
+    # screenshot live-web-demo
+    shBrowserScreenshot index.html
+)}
+
+shDirLinkValidate() {(set -e
+# this function will validate http-links embedded in .html and .md files
+    node -e '
+(function () {
+    "use strict";
+    let dict = {};
+    require("fs").readdirSync(".").forEach(async function (file) {
+        if (!(
+            /.\.html$|.\.md$/m
+        ).test(file)) {
+            return;
+        }
+        let data = await require("fs").promises.readFile(file, "utf8");
+        data.replace((
+            /\bhttps?:\/\/.*?(?:[")\]]|$)/gm
+        ), function (match0) {
+            match0 = match0.slice(0, -1).replace((
+                /[\u0022\u0027]/g
+            ), "").replace((
+                /\/branch\.\w+?\//g
+            ), "/branch.alpha/").replace((
+                /\bjslint-org\/jslint\b/g
+            ), process.env.GITHUB_REPOSITORY || "jslint-org/jslint");
+            if (match0.indexOf("http://") === 0) {
+                throw new Error("shDirLinkValidate - insecure link " + match0);
+            }
+            // ignore duplicate-link
+            if (dict.hasOwnProperty(match0)) {
+                return "";
+            }
+            dict[match0] = true;
+            let req = require("https").request(require("url").parse(
+                match0
+            ), function (res) {
+                console.error(
+                    "shDirLinkValidate " + res.statusCode + " " + match0
+                );
+                if (!(res.statusCode < 400)) {
+                    throw new Error(
+                        "shDirLinkValidate - " + file +
+                        " - unreachable link " + match0
+                    );
+                }
+                req.abort();
+                res.destroy();
+            });
+            req.setTimeout(30000);
+            req.end();
+            return "";
+        });
+        data.replace((
+            /(?:\bhref=|\bsrc=|\burl\().(.*?)(?:[")\]]|$)/gm
+        ), function (ignore, match1) {
+            if (!(
+                /^https?|^mailto:|^[#\/]/
+            ).test(match1)) {
+                require("fs").stat(match1, function (ignore, exists) {
+                    exists = exists && 200;
+                    console.error(
+                        "shDirLinkValidate " + exists + " " + match1
+                    );
+                    if (!exists) {
+                        throw new Error(
+                            "shDirLinkValidate - " + file +
+                            " - unreachable link " + match1
+                        );
+                    }
+                });
+            }
+            return "";
+        });
+    });
+}());
+' # '
 )}
 
 shGitCmdWithGithubToken() {(set -e
@@ -210,81 +363,6 @@ shGitLsTree() {(set -e
     });
 }());
 ' # '
-)}
-
-shGithubCi() {(set -e
-# this function will run github-ci
-    # jslint all files
-    shJslintCli .
-    # create coverage-report
-    shRunWithCoverage shJslintCli jslint.js
-    # screenshot live-web-demo
-    shBrowserScreenshot https://jslint.com/index.html
-)}
-
-shGithubArtifactUpload() {(set -e
-# this function will upload build-artifacts to branch-gh-pages
-    node -e '
-process.exit(
-    `${process.version.split(".")[0]}.${process.arch}.${process.platform}` !==
-    process.env.CI_NODE_VERSION_ARCH_PLATFORM
-);
-' || return 0
-    local BRANCH
-    # init $BRANCH
-    BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-    # init .git/config
-    git config --local user.email "github-actions@users.noreply.github.com"
-    git config --local user.name "github-actions"
-    # add dir .build
-    git add -f .build/
-    git commit -am "add dir .build"
-    # checkout branch-gh-pages
-    git checkout -b gh-pages
-    git fetch origin gh-pages
-    git reset --hard origin/gh-pages
-    # update dir branch.$BRANCH
-    rm -rf "branch.$BRANCH"
-    mkdir "branch.$BRANCH"
-    (set -e
-        cd "branch.$BRANCH"
-        git init -b branch1
-        git pull --depth=1 .. "$BRANCH"
-        rm -rf .git
-        git add -f .
-    )
-    # update root-dir with branch-master
-    if [ "$BRANCH" = master ]
-    then
-        git checkout master .
-    fi
-    git status
-    git commit -am "update dir branch.$BRANCH" || true
-    # if branch-gh-pages has more than 100 commits,
-    # then backup and squash commits
-    if [ "$(git rev-list --count gh-pages)" -gt 100 ]
-    then
-        # backup
-        shGitCmdWithGithubToken push origin -f gh-pages:gh-pages.backup
-        # squash commits
-        git checkout --orphan squash1
-        git commit --quiet -am squash || true
-        # reset branch-gh-pages to squashed-commit
-        git push . -f squash1:gh-pages
-        git checkout gh-pages
-        # force-push squashed-commit
-        shGitCmdWithGithubToken push origin -f gh-pages
-    fi
-    # list files
-    shGitLsTree
-    # push branch-gh-pages
-    shGitCmdWithGithubToken push origin gh-pages
-    # validate http-links in README.md
-    (set -e
-        cd "branch.$BRANCH"
-        sleep 15
-        shReadmeLinkValidate
-    )
 )}
 
 shJslintCli() {(set -e
@@ -610,58 +688,6 @@ async function jslint2({
 ' --input-type=module "$@" # '
 )}
 
-shReadmeLinkValidate() {(set -e
-# this function will validate http-links embedded in README.md
-    node -e '
-(function () {
-    "use strict";
-    let dict = {};
-    require("fs").readFileSync("README.md", "utf8").replace((
-        /[(\[]https?:\/\/.*?[)\]]/g
-    ), function (match0) {
-        if (match0.indexOf("http://") === 0) {
-            throw new Error("shReadmeLinkValidate - insecure link " + match0);
-        }
-        match0 = match0.slice(1, -1).replace((
-            /[\u0022\u0027]/g
-        ), "").replace((
-            /\/branch\.\w+?\//g
-        ), "/branch.alpha/").replace((
-            /\bjslint-org\/jslint\b/g
-        ), process.env.GITHUB_REPOSITORY);
-        // ignore private-link
-        if (
-            process.env.npm_package_private &&
-            match0.indexOf("https://github.com/") === 0
-        ) {
-            return;
-        }
-        // ignore duplicate-link
-        if (dict.hasOwnProperty(match0)) {
-            return;
-        }
-        dict[match0] = true;
-        let req = require("https").request(require("url").parse(
-            match0
-        ), function (res) {
-            console.log(
-                "shReadmeLinkValidate " + res.statusCode + " " + match0
-            );
-            if (!(res.statusCode < 400)) {
-                throw new Error(
-                    "shReadmeLinkValidate - unreachable link " + match0
-                );
-            }
-            req.abort();
-            res.destroy();
-        });
-        req.setTimeout(30000);
-        req.end();
-    });
-}());
-' # '
-)}
-
 shRunWithCoverage() {(set -e
 # this function will run nodejs command "$@" with v8-coverage and
 # create coverage-report .build/coverage/index.html
@@ -720,7 +746,7 @@ if (!globalThis.debugInline) {
             ), "&$1");
         }
         html = "";
-        html += `<!doctype html>
+        html += `<!DOCTYPE html>
 <html lang="en">
 <head>
 <title>coverage-report</title>
