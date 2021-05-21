@@ -4,7 +4,8 @@
 '
 
 shBrowserScreenshot() {(set -e
-# this function will screenshot url "$1" with headless-chrome
+# this function will run headless-chrome to screenshot url $1 with
+# window-size $2
     node -e '
 // init debugInline
 if (!globalThis.debugInline) {
@@ -114,7 +115,7 @@ if (!globalThis.debugInline) {
         );
     });
 }());
-' "$@" # '
+' "$@" # "'
 )}
 
 shCiArtifactUpload() {(set -e
@@ -178,7 +179,7 @@ process.exit(
     (set -e
         cd "branch.$BRANCH"
         sleep 15
-        shDirLinkValidate
+        shDirHttplinkValidate
     )
 )}
 
@@ -186,13 +187,13 @@ shCiBase() {(set -e
 # this function will run github-ci
     # jslint all files
     shJslintCli .
-    # create coverage-report
-    shRunWithCoverage shJslintCli jslint.js
+    # run test with coverage-report
+    shRunWithCoverage node test.js
     # screenshot live-web-demo
     shBrowserScreenshot index.html
 )}
 
-shDirLinkValidate() {(set -e
+shDirHttplinkValidate() {(set -e
 # this function will validate http-links embedded in .html and .md files
     node -e '
 (function () {
@@ -216,7 +217,7 @@ shDirLinkValidate() {(set -e
                 /\bjslint-org\/jslint\b/g
             ), process.env.GITHUB_REPOSITORY || "jslint-org/jslint");
             if (match0.indexOf("http://") === 0) {
-                throw new Error("shDirLinkValidate - insecure link " + match0);
+                throw new Error("shDirHttplinkValidate - insecure link " + match0);
             }
             // ignore duplicate-link
             if (dict.hasOwnProperty(match0)) {
@@ -227,11 +228,11 @@ shDirLinkValidate() {(set -e
                 match0
             ), function (res) {
                 console.error(
-                    "shDirLinkValidate " + res.statusCode + " " + match0
+                    "shDirHttplinkValidate " + res.statusCode + " " + match0
                 );
                 if (!(res.statusCode < 400)) {
                     throw new Error(
-                        "shDirLinkValidate - " + file +
+                        "shDirHttplinkValidate - " + file +
                         " - unreachable link " + match0
                     );
                 }
@@ -246,16 +247,15 @@ shDirLinkValidate() {(set -e
             /(?:\bhref=|\bsrc=|\burl\().(.*?)(?:[")\]]|$)/gm
         ), function (ignore, match1) {
             if (!(
-                /^https?|^mailto:|^[#\/]/
+                /^https?|^mailto:|^[#\/]/m
             ).test(match1)) {
                 require("fs").stat(match1, function (ignore, exists) {
-                    exists = exists && 200;
                     console.error(
-                        "shDirLinkValidate " + exists + " " + match1
+                        "shDirHttplinkValidate " + Boolean(exists) + " " + match1
                     );
                     if (!exists) {
                         throw new Error(
-                            "shDirLinkValidate - " + file +
+                            "shDirHttplinkValidate - " + file +
                             " - unreachable link " + match1
                         );
                     }
@@ -265,7 +265,7 @@ shDirLinkValidate() {(set -e
         });
     });
 }());
-' # '
+' # "'
 )}
 
 shGitCmdWithGithubToken() {(set -e
@@ -362,7 +362,7 @@ shGitLsTree() {(set -e
         }).join(""));
     });
 }());
-' # '
+' # "'
 )}
 
 shJslintCli() {(set -e
@@ -685,11 +685,11 @@ async function jslint2({
     }
     process.exit(exitCode);
 }());
-' --input-type=module "$@" # '
+' --input-type=module "$@" # "'
 )}
 
 shRunWithCoverage() {(set -e
-# this function will run nodejs command "$@" with v8-coverage and
+# this function will run nodejs command $@ with v8-coverage and
 # create coverage-report .build/coverage/index.html
     export DIR_COVERAGE=.build/coverage/
     rm -rf "$DIR_COVERAGE"
@@ -1238,11 +1238,11 @@ ${String(count).padStart(7, " ")}
         pathname: DIR_COVERAGE + "index"
     });
 }());
-' # '
+' # "'
 )}
 
 shRunWithScreenshotTxt() {(set -e
-# this function will run cmd "$@" and screenshot text-output
+# this function will run cmd $@ and screenshot text-output
 # https://www.cnx-software.com/2011/09/22/how-to-convert-a-command-line-result-into-an-image-in-linux/
     local EXIT_CODE
     EXIT_CODE=0
@@ -1320,7 +1320,7 @@ shRunWithScreenshotTxt() {(set -e
     } catch (ignore) {}
     require("fs").writeFileSync(process.argv[1], result);
 }());
-' "$SCREENSHOT_SVG" # '
+' "$SCREENSHOT_SVG" # "'
     shCiPrint "shRunWithScreenshotTxt - wrote - $SCREENSHOT_SVG"
     return "$EXIT_CODE"
 )}

@@ -53,14 +53,15 @@ plays the part of a stern but benevolent editor, helping you to get the style
 right so that you can focus your creative energy where it is most needed.
 
 ## Changelog Since v2020.11.6
-- ci - allow pull-requests to run restricted-ci (cannot upload artifacts)
-- gh-pages - fix missing assets and insecure http-links
-- gh-pages - merge file jslint.css into index.html
-- gh-pages - add files image-jslint-xxx.png
-- gh-pages - cleanup asset naming-convention
-- fix missing fonts in function.html and help.html
-- add files .gitconfig, Daley-Bold.woff2, Programma-Bold.woff2, icon-folder-open-solid.svg, icon-window-maximize-regular.svg
-- ci - fix http-links after moving to jslint-org
+- ci - begin addng regression tests and improve code-coverage.
+- ci - allow pull-requests to run restricted-ci (cannot upload artifacts).
+- gh-pages - fix missing assets and insecure http-links.
+- gh-pages - merge file jslint.css into index.html.
+- gh-pages - add files image-jslint-xxx.png.
+- gh-pages - cleanup asset naming-convention.
+- fix missing fonts in function.html and help.html.
+- add files .gitconfig, Daley-Bold.woff2, Programma-Bold.woff2, icon-folder-open-solid.svg, icon-window-maximize-regular.svg.
+- ci - fix http-links after moving to jslint-org.
 - doc - migrate file README to README.md with embedded ci links and screenshots.
 - ci - add macos and windows to ci-matrix.
 - ci - ci now fails if jslint-check fails for any of the files in branches.
@@ -69,5 +70,5 @@ right so that you can focus your creative energy where it is most needed.
 
 ## Todo
 - doc - add svg package-listing.
-- ci - add regression tests and improve code-coverage.
+- ci - continue addng regression tests and improve code-coverage.
 - none
