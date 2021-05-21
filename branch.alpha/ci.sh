@@ -132,8 +132,15 @@ process.exit(
     # init .git/config
     git config --local user.email "github-actions@users.noreply.github.com"
     git config --local user.name "github-actions"
+    # update README.md with $GITHUB_REPOSITORY
+    sed -i \
+        -e "s|\bjslint-org/jslint\b|$GITHUB_REPOSITORY|g" \
+        -e "s|\bjslint-org\.github\.io/jslint\b|$(
+            printf "$GITHUB_REPOSITORY" | sed -e "s|/|.github.io/|"
+        )|g" \
+        README.md
     # add dir .build
-    git add -f .build/
+    git add -f .build
     git commit -am "add dir .build"
     # checkout branch-gh-pages
     git checkout -b gh-pages
@@ -152,6 +159,7 @@ process.exit(
     # update root-dir with branch-master
     if [ "$BRANCH" = master ]
     then
+        git rm -rf .build
         git checkout master .
     fi
     git status
@@ -215,9 +223,15 @@ shDirHttplinkValidate() {(set -e
                 /\/branch\.\w+?\//g
             ), "/branch.alpha/").replace((
                 /\bjslint-org\/jslint\b/g
-            ), process.env.GITHUB_REPOSITORY || "jslint-org/jslint");
+            ), process.env.GITHUB_REPOSITORY || "jslint-org/jslint").replace((
+                /\bjslint-org\.github\.io\/jslint\b/g
+            ), String(
+                process.env.GITHUB_REPOSITORY || "jslint-org/jslint"
+            ).replace("/", ".github.io/"));
             if (match0.indexOf("http://") === 0) {
-                throw new Error("shDirHttplinkValidate - insecure link " + match0);
+                throw new Error(
+                    "shDirHttplinkValidate - insecure link " + match0
+                );
             }
             // ignore duplicate-link
             if (dict.hasOwnProperty(match0)) {
@@ -251,7 +265,8 @@ shDirHttplinkValidate() {(set -e
             ).test(match1)) {
                 require("fs").stat(match1, function (ignore, exists) {
                     console.error(
-                        "shDirHttplinkValidate " + Boolean(exists) + " " + match1
+                        "shDirHttplinkValidate " + Boolean(exists) + " " +
+                        match1
                     );
                     if (!exists) {
                         throw new Error(
@@ -1325,5 +1340,5 @@ shRunWithScreenshotTxt() {(set -e
     return "$EXIT_CODE"
 )}
 
-# run "$@"
+# run $@
 "$@"

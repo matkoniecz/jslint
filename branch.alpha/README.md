@@ -3,7 +3,7 @@
 Douglas Crockford
 douglas@crockford.com
 
-2020-11-06
+## v2020.11.6
 
 ## Status
 | Branch | [master](https://github.com/jslint-org/jslint/tree/master) | [beta](https://github.com/jslint-org/jslint/tree/beta) | [alpha](https://github.com/jslint-org/jslint/tree/alpha)|
@@ -51,24 +51,3 @@ This applies to programming as well. Conforming to a consistent style improves
 readability, and frees you to express yourself in ways that matter. JSLint here
 plays the part of a stern but benevolent editor, helping you to get the style
 right so that you can focus your creative energy where it is most needed.
-
-## Changelog Since v2020.11.6
-- ci - begin addng regression tests and improve code-coverage.
-- ci - allow pull-requests to run restricted-ci (cannot upload artifacts).
-- gh-pages - fix missing assets and insecure http-links.
-- gh-pages - merge file jslint.css into index.html.
-- gh-pages - add files image-jslint-xxx.png.
-- gh-pages - cleanup asset naming-convention.
-- fix missing fonts in function.html and help.html.
-- add files .gitconfig, Daley-Bold.woff2, Programma-Bold.woff2, icon-folder-open-solid.svg, icon-window-maximize-regular.svg.
-- ci - fix http-links after moving to jslint-org.
-- doc - migrate file README to README.md with embedded ci links and screenshots.
-- ci - add macos and windows to ci-matrix.
-- ci - ci now fails if jslint-check fails for any of the files in branches.
-- ci - add github-workflows to generate code-coverage for jslint.js.
-- none
-
-## Todo
-- doc - add svg package-listing.
-- ci - continue addng regression tests and improve code-coverage.
-- none

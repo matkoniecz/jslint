@@ -1,95 +1,10 @@
 import jslint from "./jslint.js";
 
-(function () {
-    function objectDeepCopyWithKeysSorted(obj) {
-    /*
-     * this function will recursively deep-copy <obj> with keys sorted
-     */
-        let sorted;
-        if (typeof obj !== "object" || !obj) {
-            return obj;
-        }
-        // recursively deep-copy list with child-keys sorted
-        if (Array.isArray(obj)) {
-            return obj.map(objectDeepCopyWithKeysSorted);
-        }
-        // recursively deep-copy obj with keys sorted
-        sorted = {};
-        Object.keys(obj).sort().forEach(function (key) {
-            sorted[key] = objectDeepCopyWithKeysSorted(obj[key]);
-        });
-        return sorted;
-    }
-
-    //!! function assertJsonEqual(aa, bb) {
-    //!! /*
-     //!! * this function will assert
-     //!! * JSON.stringify(<aa>) === JSON.stringify(<bb>)
-     //!! */
-        //!! aa = JSON.stringify(objectDeepCopyWithKeysSorted(aa));
-        //!! bb = JSON.stringify(objectDeepCopyWithKeysSorted(bb));
-        //!! if (aa !== bb) {
-            //!! throw new Error(
-                //!! JSON.stringify(aa) + " !== " + JSON.stringify(bb)
-            //!! );
-        //!! }
-    //!! }
-
-    function assertOrThrow(passed, msg) {
-    /*
-     * this function will throw <msg> if <passed> is falsy
-     */
-        if (!passed) {
-            throw (
-                (
-                    typeof msg.message === "string" &&
-                    typeof msg.stack === "string"
-                )
-                // if msg is err, then leave as is
-                ? msg
-                : new Error(
-                    typeof msg === "string"
-                    // if msg is string, then leave as is
-                    ? msg
-                    // else JSON.stringify(msg)
-                    : JSON.stringify(msg, undefined, 4)
-                )
-            );
-        }
-    }
-
-    //!! (function testCase_assertXxx_defaul() {
-    //!! /*
-     //!! * this function will test assertXxx's default handling-behavior
-     //!! */
-        //!! // test assertion passed
-        //!! assertOrThrow(true, true);
-        //!! // test assertion failed with string message
-        //!! try {
-            //!! assertOrThrow(undefined, "aa");
-        //!! } catch (err) {
-            //!! // validate err
-            //!! assertJsonEqual(err.message, "aa");
-        //!! }
-        //!! // test assertion failed with errObj
-        //!! try {
-            //!! assertOrThrow(undefined, new Error("aa"));
-        //!! } catch (err) {
-            //!! // validate err
-            //!! assertJsonEqual(err.message, "aa");
-        //!! }
-        //!! // test assertion failed with json object
-        //!! try {
-            //!! assertOrThrow(undefined, {
-                //!! aa: 1
-            //!! });
-        //!! } catch (err) {
-            //!! // validate err
-            //!! assertJsonEqual(err.message, "{\n    \"aa\": 1\n}");
-        //!! }
-    //!! }());
-
-    // validate jslint warnings
+(function testCaseJslintWarningsValidate() {
+/*
+ * this function will validate each jslint <warning> is raised with given
+ * malformed <code>
+ */
     Object.entries({
         "and": [
             "aa && aa || aa"
@@ -441,22 +356,22 @@ import jslint from "./jslint.js";
             "!/_/"
         ],
         "wrap_unary": [
-            "aa=aa - -aa"
+            "0 - -0"
         ]
     }).forEach(function ([
-        warning, codeList
+        expectedWarning, malformedCodeList
     ]) {
-        codeList.forEach(function (code) {
-            let warnings = jslint(code).warnings;
-            let passed = warnings.some(function ({
+        malformedCodeList.forEach(function (malformedCode) {
+            if (!jslint(malformedCode).warnings.some(function ({
                 code
             }) {
-                return code === warning;
-            });
-            assertOrThrow(passed, JSON.stringify({
-                code,
-                warning
-            }));
+                return code === expectedWarning;
+            })) {
+                throw new Error(
+                    `jslint failed to warn "${expectedWarning}" with ` +
+                    `malfomed code "${malformedCode}"`
+                );
+            }
         });
     });
 }());
