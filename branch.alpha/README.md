@@ -3,15 +3,15 @@
 Douglas Crockford
 douglas@crockford.com
 
-## v2020.11.6
+## v2021.5.21
 
 ## Status
 | Branch | [master](https://github.com/jslint-org/jslint/tree/master) | [beta](https://github.com/jslint-org/jslint/tree/beta) | [alpha](https://github.com/jslint-org/jslint/tree/alpha)|
 |--:|:--:|:--:|:--:|
 | CI | [![ci](https://github.com/jslint-org/jslint/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jslint-org/jslint/actions?query=branch%3Amaster) | [![ci](https://github.com/jslint-org/jslint/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/jslint-org/jslint/actions?query=branch%3Abeta) | [![ci](https://github.com/jslint-org/jslint/actions/workflows/ci.yml/badge.svg?branch=alpha)](https://github.com/jslint-org/jslint/actions?query=branch%3Aalpha)|
 | Coverage | [![coverage](https://jslint-org.github.io/jslint/branch.master/.build/coverage/coverage-badge.svg)](https://jslint-org.github.io/jslint/branch.master/.build/coverage/index.html) | [![coverage](https://jslint-org.github.io/jslint/branch.beta/.build/coverage/coverage-badge.svg)](https://jslint-org.github.io/jslint/branch.beta/.build/coverage/index.html) | [![coverage](https://jslint-org.github.io/jslint/branch.alpha/.build/coverage/coverage-badge.svg)](https://jslint-org.github.io/jslint/branch.alpha/.build/coverage/index.html)|
-| Demo | [<img src="https://jslint-org.github.io/jslint/image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.master/index.html) | [<img src="https://jslint-org.github.io/jslint/image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.beta/index.html) | [<img src="https://jslint-org.github.io/jslint/image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.alpha/index.html)|
-| Artifacts | [<img src="https://jslint-org.github.io/jslint/image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.master/.build) | [<img src="https://jslint-org.github.io/jslint/image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.beta/.build) | [<img src="https://jslint-org.github.io/jslint/image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.alpha/.build)|
+| Demo | [<img src="image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.master/index.html) | [<img src="image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.beta/index.html) | [<img src="image-window-maximize-regular.svg" height="30">](https://jslint-org.github.io/jslint/branch.alpha/index.html)|
+| Artifacts | [<img src="image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.master/.build) | [<img src="image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.beta/.build) | [<img src="image-folder-open-solid.svg" height="30">](https://github.com/jslint-org/jslint/tree/gh-pages/branch.alpha/.build)|
 
 ## Live Web Demo
 - [https://jslint-org.github.io/jslint/index.html](https://jslint-org.github.io/jslint/index.html)
